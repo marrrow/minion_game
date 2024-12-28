@@ -34,20 +34,21 @@ const Game = () => {
 
       // Spawn items
       if (Math.random() < 0.02 * gameSpeed) {
-        setItems((prev) => [
-          ...prev,
-          {
-            id: Date.now(),
-            x: Math.random() * (CANVAS_WIDTH - EGG_SIZE),
-            y: 0,
-            type: Math.random() > 0.3 ? 'egg' : 'rotten_egg'
-          }
-        ]);
+        const newItem = {
+          id: Date.now(),
+          x: Math.random() * (CANVAS_WIDTH - EGG_SIZE),
+          y: 0,
+          type: Math.random() > 0.7 ? 'rotten_egg' : 'egg' // 30% chance of rotten egg
+        };
+        setItems((prev) => [...prev, newItem]);
       }
 
       // Move items
       setItems((prev) =>
-        prev.map((item) => ({ ...item, y: item.y + 2 * gameSpeed }))
+        prev.map((item) => ({
+          ...item,
+          y: item.y + 2 * gameSpeed
+        }))
       );
 
       // Check collisions
@@ -62,7 +63,10 @@ const Game = () => {
             if (item.type === 'egg') {
               setScore((prevScore) => prevScore + 10);
             } else {
-              setLives((prevLives) => prevLives - 1);
+              setLives((prevLives) => {
+                const newLives = prevLives - 1;
+                return newLives >= 0 ? newLives : 0; // Prevent negative lives
+              });
               if (lives <= 1) {
                 setGameOver(true);
               }
@@ -86,7 +90,7 @@ const Game = () => {
     }, 16);
 
     return () => clearInterval(gameLoop);
-  }, [minionX, gameSpeed, lives, gameOver]);
+  }, [minionX, gameSpeed, lives, gameOver, score]);
 
   // Draw game
   useEffect(() => {
@@ -97,7 +101,7 @@ const Game = () => {
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
       // Background
-      ctx.fillStyle = chaosMode ? '#FF0000' : '#87CEEB';
+      ctx.fillStyle = chaosMode ? '#FFCCCB' : '#87CEEB'; // Subtle color change
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
       // Minion
@@ -118,7 +122,7 @@ const Game = () => {
       ctx.fillText(`Score: ${score}`, 10, 30);
 
       // Lives
-      ctx.fillText(`Lives: ${lives}`, CANVAS_WIDTH - 100, 30);
+      ctx.fillText(`Lives: ${lives}`, 10, 60);
 
       // Game over
       if (gameOver) {
